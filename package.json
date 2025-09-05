@@ -1,0 +1,11 @@
+{
+    "name": "com.white-arrow.multi-wallet",
+    "version": "1.0.0",
+    "displayName": "Multi Wallet",
+    "description": "Manage multiple in-game currencies with a clean, centralized wallet system built for Unity.",
+    "licensesUrl": "https://github.com/CliffCalist/multi-wallet/blob/f12881f1f1e4563e84d1c9737c99ef38f2529c47/LICENSE",
+    "author": {
+        "name": "White Arrow",
+        "email": "cliffstersprog@gmail.com"
+    }
+}
