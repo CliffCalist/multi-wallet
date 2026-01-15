@@ -42,7 +42,7 @@ namespace WhiteArrow.MultiWallet
 
 
 
-        public bool IsWalletExist(string currency)
+        public bool HasWallet(string currency)
         {
             return _wallets.Exists(w => w.Currency == currency);
         }
@@ -54,7 +54,7 @@ namespace WhiteArrow.MultiWallet
 
             foreach (var wallet in wallets)
             {
-                if (wallet != null && !IsWalletExist(wallet.Currency))
+                if (wallet != null && !HasWallet(wallet.Currency))
                     _wallets.Add(wallet);
             }
         }
@@ -64,7 +64,7 @@ namespace WhiteArrow.MultiWallet
             if (wallet is null)
                 throw new ArgumentNullException(nameof(wallet));
 
-            if (IsWalletExist(wallet.Currency))
+            if (HasWallet(wallet.Currency))
                 return;
 
             _wallets.Add(wallet);
@@ -82,19 +82,19 @@ namespace WhiteArrow.MultiWallet
             return GetWallet(currency).Balance;
         }
 
-        public bool TryDebit(string currency, long value)
+        public bool TrySpend(string currency, long value)
         {
-            return GetWallet(currency).TryDebit(value);
+            return GetWallet(currency).TrySpend(value);
         }
 
-        public void Debit(string currency, long value)
+        public void Add(string currency, long value)
         {
-            GetWallet(currency).Debit(value);
+            GetWallet(currency).Spend(value);
         }
 
-        public void Deposit(string currency, long value)
+        public void Spend(string currency, long value)
         {
-            GetWallet(currency).Deposit(value);
+            GetWallet(currency).Add(value);
         }
 
         public void Reset(string currency)

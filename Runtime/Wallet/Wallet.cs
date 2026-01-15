@@ -50,7 +50,7 @@ namespace WhiteArrow.MultiWallet
 
 
 
-        public bool TryDebit(long amount)
+        public bool TrySpend(long amount)
         {
             if (amount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(amount));
@@ -58,11 +58,11 @@ namespace WhiteArrow.MultiWallet
             if (amount > Balance)
                 return false;
 
-            Debit(amount);
+            Spend(amount);
             return true;
         }
 
-        public void Debit(long amount)
+        public void Spend(long amount)
         {
             if (amount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(amount));
@@ -76,7 +76,7 @@ namespace WhiteArrow.MultiWallet
 
 
 
-        public void Deposit(long amount)
+        public void Add(long amount)
         {
             if (amount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(amount));
