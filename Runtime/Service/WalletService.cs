@@ -70,6 +70,14 @@ namespace WhiteArrow.MultiWallet
             _wallets.Add(wallet);
         }
 
+        public void RemoveWallet(string currencyId)
+        {
+            if (string.IsNullOrEmpty(currencyId))
+                throw new ArgumentNullException(nameof(currencyId));
+
+            _wallets.RemoveAll(w => w.Currency == currencyId);
+        }
+
         public void RemoveAllWallets()
         {
             _wallets.Clear();
