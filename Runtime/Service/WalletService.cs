@@ -13,17 +13,29 @@ namespace WhiteArrow.MultiWallet
 
 
 
+        public event Action<Wallet> WalletAdded;
+        public event Action<Wallet> WalletRemoved;
+
+
 
         public void RestoreStateFrom(IWalletServiceSnapshot snapshot)
         {
             if (snapshot == null)
                 throw new ArgumentNullException(nameof(snapshot));
 
+            RemoveAllWallets();
+
             foreach (var walletSnapshot in snapshot.Wallets)
             {
-                var wallet = new Wallet(walletSnapshot.Currency);
-                wallet.RestoreStateFrom(walletSnapshot);
-                _wallets.Add(wallet);
+                if (TryGetWallet(walletSnapshot.Currency, out var wallet))
+                    wallet.RestoreStateFrom(walletSnapshot);
+                else
+                {
+                    var newWallet = new Wallet(walletSnapshot.Currency);
+                    newWallet.RestoreStateFrom(walletSnapshot);
+                    _wallets.Add(newWallet);
+                    WalletAdded?.Invoke(newWallet);
+                }
             }
         }
 
@@ -55,7 +67,10 @@ namespace WhiteArrow.MultiWallet
             foreach (var wallet in wallets)
             {
                 if (wallet != null && !HasWallet(wallet.Currency))
+                {
                     _wallets.Add(wallet);
+                    WalletAdded?.Invoke(wallet);
+                }
             }
         }
 
@@ -68,6 +83,7 @@ namespace WhiteArrow.MultiWallet
                 return;
 
             _wallets.Add(wallet);
+            WalletAdded?.Invoke(wallet);
         }
 
         public void RemoveWallet(string currencyId)
@@ -75,12 +91,20 @@ namespace WhiteArrow.MultiWallet
             if (string.IsNullOrEmpty(currencyId))
                 throw new ArgumentNullException(nameof(currencyId));
 
-            _wallets.RemoveAll(w => w.Currency == currencyId);
+            if (TryGetWallet(currencyId, out var wallet))
+            {
+                _wallets.Remove(wallet);
+                WalletRemoved?.Invoke(wallet);
+            }
         }
 
         public void RemoveAllWallets()
         {
+            var wallets = new List<Wallet>(_wallets);
             _wallets.Clear();
+
+            foreach (var wallet in wallets)
+                WalletRemoved?.Invoke(wallet);
         }
 
 
