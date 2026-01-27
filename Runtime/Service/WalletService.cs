@@ -121,12 +121,12 @@ namespace WhiteArrow.MultiWallet
 
         public void Add(string currency, long value)
         {
-            GetWallet(currency).Spend(value);
+            GetWallet(currency).Add(value);
         }
 
         public void Spend(string currency, long value)
         {
-            GetWallet(currency).Add(value);
+            GetWallet(currency).Spend(value);
         }
 
         public void Reset(string currency)
