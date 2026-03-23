@@ -6,6 +6,7 @@ namespace WhiteArrow.MultiWallet
     public class WalletService
     {
         private readonly List<Wallet> _wallets = new();
+        private readonly Dictionary<Wallet, Action<long>> _walletBalanceHandlers = new();
 
 
         public int Count => _wallets.Count;
@@ -15,6 +16,7 @@ namespace WhiteArrow.MultiWallet
 
         public event Action<Wallet> WalletAdded;
         public event Action<Wallet> WalletRemoved;
+        public event Action<Wallet> BalanceChanged;
 
 
 
@@ -32,6 +34,7 @@ namespace WhiteArrow.MultiWallet
                 else
                 {
                     var newWallet = new Wallet(walletSnapshot.Currency);
+                    SubscribeToWalletBalanceChanged(newWallet);
                     newWallet.RestoreStateFrom(walletSnapshot);
                     _wallets.Add(newWallet);
                     WalletAdded?.Invoke(newWallet);
@@ -69,6 +72,7 @@ namespace WhiteArrow.MultiWallet
                 if (wallet != null && !HasWallet(wallet.Currency))
                 {
                     _wallets.Add(wallet);
+                    SubscribeToWalletBalanceChanged(wallet);
                     WalletAdded?.Invoke(wallet);
                 }
             }
@@ -83,6 +87,7 @@ namespace WhiteArrow.MultiWallet
                 return;
 
             _wallets.Add(wallet);
+            SubscribeToWalletBalanceChanged(wallet);
             WalletAdded?.Invoke(wallet);
         }
 
@@ -94,6 +99,7 @@ namespace WhiteArrow.MultiWallet
             if (TryGetWallet(currencyId, out var wallet))
             {
                 _wallets.Remove(wallet);
+                UnsubscribeFromWalletBalanceChanged(wallet);
                 WalletRemoved?.Invoke(wallet);
             }
         }
@@ -104,7 +110,10 @@ namespace WhiteArrow.MultiWallet
             _wallets.Clear();
 
             foreach (var wallet in wallets)
+            {
+                UnsubscribeFromWalletBalanceChanged(wallet);
                 WalletRemoved?.Invoke(wallet);
+            }
         }
 
 
@@ -147,6 +156,30 @@ namespace WhiteArrow.MultiWallet
             if (TryGetWallet(currency, out var wallet))
                 return wallet;
             else throw new Exception($"{currency} not found.");
+        }
+
+
+
+        private void SubscribeToWalletBalanceChanged(Wallet wallet)
+        {
+            if (wallet == null || _walletBalanceHandlers.ContainsKey(wallet))
+                return;
+
+            Action<long> handler = b => BalanceChanged?.Invoke(wallet);
+            _walletBalanceHandlers[wallet] = handler;
+            wallet.BalanceChanged += handler;
+        }
+
+        private void UnsubscribeFromWalletBalanceChanged(Wallet wallet)
+        {
+            if (wallet == null)
+                return;
+
+            if (_walletBalanceHandlers.TryGetValue(wallet, out var handler))
+            {
+                wallet.BalanceChanged -= handler;
+                _walletBalanceHandlers.Remove(wallet);
+            }
         }
     }
 }
